@@ -1,0 +1,37 @@
+.weather-cards {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start; /* Se till att korten hamnar i toppen */
+    gap: 20px;
+    flex-wrap: nowrap; /* Hindrar att korten bryts till ny rad */
+    overflow-x: auto; /* Gör så att det går att scrolla horisontellt om utrymmet inte räcker */
+    padding: 20px;
+    max-width: 100%;
+    white-space: nowrap;
+}
+
+.weather-card h2 {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 5px;
+    color: #333;
+}
+
+.weather-card .temperature {
+    font-size: 22px;
+    font-weight: bold;
+    color: #007bff;
+    margin: 5px 0;
+}
+
+.weather-icon {
+    font-size: 40px;
+    margin-top: 10px;
+}
+
+/* Anpassning för mindre skärmar */
+@media (max-width: 768px) {
+    .weather-card {
+        width: 180px; /* Minskar kortens storlek något på mindre skärmar */
+    }
+}

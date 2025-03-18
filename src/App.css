@@ -1,0 +1,37 @@
+body {
+  font-family: Arial, sans-serif;
+  background: linear-gradient(to bottom, #4da6ff, #ffffff);
+  margin: 0;
+  padding: 0;
+}
+
+.container {
+  text-align: center;
+  padding: 30px;
+}
+
+.title {
+  color: white;
+  font-size: 28px;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+/* ======= Layout för alla väderkort ======= */
+.weather-container {
+  display: flex;
+  flex-wrap: nowrap; /* Förhindrar att korten bryts till ny rad */
+  justify-content: center;
+  gap: 20px;
+  max-width: 1000px; /* Justera bredden om nödvändigt */
+  margin: 0 auto;
+  overflow-x: auto; /* Lägger till horisontell scroll om det behövs */
+}
+
+/* ======= Media Queries för responsiv design ======= */
+@media (max-width: 768px) {
+  .weather-container {
+      flex-direction: column;
+      align-items: center;
+  }
+}
