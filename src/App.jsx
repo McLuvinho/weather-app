@@ -15,9 +15,9 @@ const fetchWeatherData = async (latitude, longitude, days = 1) => {
         const data = await response.json();
 
         return data.daily.temperature_2m_max.slice(0, days).map((temp, index) => ({
-            temp: Math.round(temp),
+            temp: Math.round(temp),  // Dagens max-temp
             weatherCode: data.daily.weathercode[index],
-            date: new Date(Date.now() + index * 86400000).toISOString().split("T")[0] // Genererar datum
+            date: new Date(Date.now() + index * 86400000).toISOString().split("T")[0]
         }));
     } catch (error) {
         console.error("Fel vid hämtning av väderdata:", error);
@@ -25,18 +25,31 @@ const fetchWeatherData = async (latitude, longitude, days = 1) => {
     }
 };
 
-// Hämta lokal tid via Open-Meteo (snabbare och enklare!)
+// Hämtar den aktuella temperaturen
+const fetchCurrentTemperature = async (latitude, longitude) => {
+    try {
+        const response = await fetch(
+            `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true&timezone=Europe/Stockholm`
+        );
+        const data = await response.json();
+
+        return data.current_weather ? Math.round(data.current_weather.temperature) : null;
+    } catch (error) {
+        console.error("Fel vid hämtning av aktuell temperatur:", error);
+        return null;
+    }
+};
+
+// Hämtar lokal tid via Open-Meteo
 const fetchLocalTime = async (latitude, longitude) => {
     try {
         const response = await fetch(
             `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true&timezone=Europe/Stockholm`
         );
         const data = await response.json();
-        if (data.current_weather) {
-            const localTime = new Date(data.current_weather.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            return localTime;
-        }
-        return "N/A";
+        return data.current_weather
+            ? new Date(data.current_weather.time).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+            : "N/A";
     } catch (error) {
         console.error("Fel vid hämtning av lokal tid:", error);
         return "N/A";
@@ -57,12 +70,16 @@ const App = () => {
                 const coordinates = await fetchCoordinates(city);
                 if (coordinates) {
                     const weatherArray = await fetchWeatherData(coordinates.latitude, coordinates.longitude, 1);
+                    const currentTemp = await fetchCurrentTemperature(coordinates.latitude, coordinates.longitude);
                     const localTime = await fetchLocalTime(coordinates.latitude, coordinates.longitude);
 
+                    console.log(currentTemp);
+                    
                     if (weatherArray) {
                         newWeatherData[city] = weatherArray.map((day) => ({
                             city,
                             temp: day.temp,
+                            currentTemp, // Nu hämtas aktuell temperatur separat
                             weatherIcon: weatherIcons[day.weatherCode] || "❓",
                             date: day.date
                         }));
@@ -83,6 +100,7 @@ const App = () => {
         const coordinates = await fetchCoordinates(city);
         if (coordinates) {
             const weatherArray = await fetchWeatherData(coordinates.latitude, coordinates.longitude, 5);
+            const currentTemp = await fetchCurrentTemperature(coordinates.latitude, coordinates.longitude);
             const localTime = await fetchLocalTime(coordinates.latitude, coordinates.longitude);
 
             if (weatherArray) {
@@ -90,6 +108,7 @@ const App = () => {
                     [city]: weatherArray.map((day) => ({
                         city,
                         temp: day.temp,
+                        currentTemp, // Nu hämtas aktuell temperatur separat
                         weatherIcon: weatherIcons[day.weatherCode] || "❓",
                         date: day.date
                     }))
@@ -110,7 +129,8 @@ const App = () => {
                             key={`${city}-${index}`}
                             city={city}
                             weatherData={day}
-                            localTime={localTimes[city]} // Skickar aktuell tid till Weather-komponenten
+                            localTime={localTimes[city]}
+                            currentTemp={day.currentTemp} // Skickar aktuell temperatur till Weather
                         />
                     ))
                 )}
